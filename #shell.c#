@@ -3,6 +3,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+
+// DELETE if not used :) 
 char ** parse_args( char * line ) {
 
   char **ptr = malloc(8 * sizeof(char *));
@@ -15,15 +17,17 @@ char ** parse_args( char * line ) {
 }
 
 int main(int argc, char* argv[]) {
-  //char line[100] = "ls -l --all --color";
-  //char line2[128] = "ls -l -a";
-  char ** args = parse_args(argv[0]); //splitting into ls, -l, --all, --color
-  //printf("%s\n", args[0]); //printing each argument 
-  //printf("%s\n", args[1]);
-  //printf("%s\n", args[2]);
-  //printf("%p\n", args);
-  execvp(args[0], args); //executing ls
   
+  char **ptr = malloc ( argc * sizeof(char*) );
+
+  int c = 0;
+  while ( c < argc-1 ) {
+    ptr[c] = argv[c+1];
+    c++;
+  }
+  argv[c] = NULL;
+  
+  execvp(ptr[0], ptr);
   
   return 0;
 }
