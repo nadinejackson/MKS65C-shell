@@ -39,11 +39,13 @@ int main(int argc, char* argv[]) {
   printf("our_shell$ ");
   int *status;
   int p = getpid();
+  char * junk;
+  char * program = malloc(256 * sizeof(char));
+  char ** parsed = malloc(256 * sizeof(char*));
   while(1)
     {
-      char * program = malloc(256 * sizeof(char));
-      char ** parsed = malloc(256 * sizeof(char*));
       fscanf(stdin, "%[^\n]s", program);
+      fscanf(stdin, "%c", junk);
       parsed = parse_args(program);
 
       int f = fork();
