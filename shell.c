@@ -36,41 +36,26 @@ int main(int argc, char* argv[]) {
   
       execvp(ptr[0], ptr);
     }
-  printf("our_shell$");
-  int s;
+  printf("our_shell$ ");
+  int *status;
   int p = getpid();
   while(1)
-  {  
-      /*
-	char * program = malloc(256 * sizeof(char));
-	char * program2 = malloc(256 * sizeof(char));
-	char * test = malloc(256 * sizeof(char));
-	scanf("%s %s %s", program, test, program2);
-	printf("hi\n");
-	printf("hi, you typed %s %s %s\n", program, test, program2);
-	printf("hey\n");
-	char ** parsed = malloc(256 * sizeof(char*));
-	parsed[0] = program;
-	parsed[1] = test;
-	parsed[2] = program2;
-	parsed[3] = 0;
-      */
+    {
       char * program = malloc(256 * sizeof(char));
-      scanf("%s", program);
       char ** parsed = malloc(256 * sizeof(char*));
-      parsed [0] = program;
-      
+      fscanf(stdin, "%[^\n]s", program);
+      parsed = parse_args(program);
+
       int f = fork();
       if(getpid() != p)
 	{
-	  printf("test");
 	  execvp(parsed[0], parsed);
+	  
 	}
       else{
-	
-	wait(&s);
-	printf("our shell$");
-	}
-}
+	waitpid( f, status, 0);
+	printf("our shell$ ");
+      }
+    }
   return 0;
 }
