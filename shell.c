@@ -40,24 +40,31 @@ int main(int argc, char* argv[]) {
   int *status;
   int p = getpid();
   char * junk;
-  char * program = malloc(256 * sizeof(char));
-  char ** parsed = malloc(256 * sizeof(char*));
+  char * program = malloc(256 * sizeof *program);
+  char ** parsed = malloc(256 * sizeof program);
   while(1)
     {
       fscanf(stdin, "%[^\n]s", program);
       fscanf(stdin, "%c", junk);
-      parsed = parse_args(program);
-
-      int f = fork();
-      if(getpid() != p)
+      if(!strncmp("cd ", program, 3))
 	{
-	  execvp(parsed[0], parsed);
-	  
+	  chdir(program + 3);
 	}
-      else{
-	waitpid( f, status, 0);
-	printf("our shell$ ");
-      }
+      else
+	{
+	  parsed = parse_args(program);
+   
+	  int f = fork();
+	  if(getpid() != p)
+	    {
+	      execvp(parsed[0], parsed);
+	  
+	    }
+	  else{
+	    waitpid( f, status, 0);
+	  }
+	}
+      printf("our shell$ ");
     }
   return 0;
 }
