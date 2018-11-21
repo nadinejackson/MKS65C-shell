@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
   int s;
   int p = getpid();
   while(1)
-    {  
+  {  
       /*
 	char * program = malloc(256 * sizeof(char));
 	char * program2 = malloc(256 * sizeof(char));
@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
       parsed [0] = program;
       
       int f = fork();
-      if(getpid() == p)
+      if(getpid() != p)
 	{
 	  printf("test");
 	  execvp(parsed[0], parsed);
@@ -71,6 +71,6 @@ int main(int argc, char* argv[]) {
 	wait(&s);
 	printf("our shell$");
 	}
-    }
+}
   return 0;
 }
