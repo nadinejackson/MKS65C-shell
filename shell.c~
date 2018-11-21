@@ -17,7 +17,10 @@ char ** parse_args( char * line ) {
 }
 
 int main(int argc, char* argv[]) {
-  
+
+  // use this to run command via a.out
+  // argv[0] is ./a.out
+  // and anything after that is the desired command
   char **ptr = malloc ( argc * sizeof(char*) );
 
   int c = 0;
