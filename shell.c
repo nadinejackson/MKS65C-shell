@@ -24,26 +24,29 @@ int main(int argc, char* argv[])
   int p = getpid();
   char * junk;
   char ** programs = malloc(256 * sizeof *programs);
-  char * program = malloc(256 * sizeof *program);
+  char * line = malloc(256 * sizeof *line);
   char ** parsed = malloc(256 * sizeof *parsed);
+  //char * buf = malloc(128 * sizeof *buf);
   while(1)
     {
-      printf("our_shell$ ");
-      fscanf(stdin, "%[^\n]s", program);
+      printf("%s>> ", getenv("USER"));//, getcwd(buf, sizeof buf));
+      fscanf(stdin, "%[^\n]s", line);
       fscanf(stdin, "%c", junk);
       *junk = ';';
-      programs = parse_args(program, junk);
+      
+      programs = parse_args(line, junk);
       int i;
       
       for(i = 0; programs[i]; i++)
 	{
-	  if(!strncmp("cd ", programs[i], 3))
-	    {
+	  
+	  if(!strncmp("cd ", programs[i], 3))//cd
 	      chdir(programs[i] + 3);
-	    }
-	  else if(!strncmp("exit", programs[i], 4))
+	  
+	  else if(!strncmp("exit", programs[i], 4))//exit
 	    return 0;
-	  else
+	  
+	  else //everything else
 	    {
 	      *junk = ' ';
 	      parsed = parse_args(programs[i], junk);
@@ -53,7 +56,6 @@ int main(int argc, char* argv[])
 		execvp(parsed[0], parsed);
 	      else
 		waitpid( f, status, 0);
-	      //free(parsed);
 	    }
 	}
     }
