@@ -1,5 +1,6 @@
 0. I tried adding the path but it caused a segfault, not sure why, need to fix that
 1. after cd-ing, ls unpredicatbly repeats itself, also not sure why, need to fix
 2. Allow & to work
-3. redirection (after break)
-4. pipes (after break)
+3. remove ending spaces
+4. redirection (after break)
+5. pipes (after break)
