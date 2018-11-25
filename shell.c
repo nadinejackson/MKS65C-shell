@@ -5,66 +5,57 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-// DELETE if not used :) 
-char ** parse_args( char * line ) {
+char ** parse_args( char * line , char * separator) {
 
-  char **ptr = malloc(8 * sizeof(char *));
+  char **ptr = malloc(256 * sizeof(char *));
   //allocating memory for the array of strings
 
+  while(*line == ' ')
+    line++;
   int ctr = 0; //the place in the array of string pointers
-  while (ptr[ctr++] = strsep(&line, " ")); //iterate through each split string and add a pointer to it to that index of ptr
+  while (ptr[ctr++] = strsep(&line, separator)); //iterate through each split string and add a pointer to it to that index of ptr
 
   return ptr;
 }
 
-int main(int argc, char* argv[]) {
-
-  // use this to run command via a.out
-  // argv[0] is ./a.out
-  // and anything after that is the desired command
-
-  if (argc > 1)
-    {
-      char **ptr = malloc ( argc * sizeof(char*) );
-
-      int c = 0;
-      while ( c < argc-1 ) {
-	ptr[c] = argv[c+1];
-	c++;
-      }
-      argv[c] = NULL;
-  
-      execvp(ptr[0], ptr);
-    }
-  printf("our_shell$ ");
+int main(int argc, char* argv[])
+{
   int *status;
   int p = getpid();
   char * junk;
+  char ** programs = malloc(256 * sizeof *programs);
   char * program = malloc(256 * sizeof *program);
-  char ** parsed = malloc(256 * sizeof program);
+  char ** parsed = malloc(256 * sizeof *parsed);
   while(1)
     {
+      printf("our_shell$ ");
       fscanf(stdin, "%[^\n]s", program);
       fscanf(stdin, "%c", junk);
-      if(!strncmp("cd ", program, 3))
+      *junk = ';';
+      programs = parse_args(program, junk);
+      int i;
+      
+      for(i = 0; programs[i]; i++)
 	{
-	  chdir(program + 3);
-	}
-      else
-	{
-	  parsed = parse_args(program);
-   
-	  int f = fork();
-	  if(getpid() != p)
+	  if(!strncmp("cd ", programs[i], 3))
 	    {
-	      execvp(parsed[0], parsed);
-	  
+	      chdir(programs[i] + 3);
 	    }
-	  else{
-	    waitpid( f, status, 0);
-	  }
+	  else if(!strncmp("exit", programs[i], 4))
+	    return 0;
+	  else
+	    {
+	      *junk = ' ';
+	      parsed = parse_args(programs[i], junk);
+	      
+	      int f = fork();
+	      if(getpid() != p)
+		execvp(parsed[0], parsed);
+	      else
+		waitpid( f, status, 0);
+	      //free(parsed);
+	    }
 	}
-      printf("our shell$ ");
     }
   return 0;
 }
