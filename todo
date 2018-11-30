@@ -1,6 +1,16 @@
-0. I tried adding the path but it caused a segfault, not sure why, need to fix that
-1. after cd-ing, ls unpredicatbly repeats itself, also not sure why, need to fix
-2. Allow & to work
-3. remove ending spaces
-4. redirection (after break)
-5. pipes (after break)
+-Implement simple redirection using > (redirecting stdout) and < (redirecting stdin) 
+-Implement simple pipes, that is: ls | wc would run ls and use the output from ls as the input for wc. - Check out popen() for this. 
+
+Every function you write must have a function header describing the arguments, return value and what the function does.
+
+You should have a readme file with the following:
+-A description of what features your shell implements
+-A description of what features you attempted to implement but were unsuccessful
+-Any bugs or things you want me to know about your program
+-I am much more forgiving of reported bugs than bugs I discover while testing
+-A copy of every function header
+-An example of the readme file can be found in the github repository for this assignment
+-This project should use separate C files as necessary.
+
+Try starting with these restrictions on input:
+-You can restrict the locations and ordering of > and <. 

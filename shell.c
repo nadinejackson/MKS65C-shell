@@ -18,6 +18,11 @@ char ** parse_args( char * line , char * separator) {
   return ptr;
 }
 
+
+/**
+ * main (int, char*)
+ * Does everything. Except parse_args. But you knew that. ;) jk. will fix.
+ */
 int main(int argc, char* argv[])
 {
   int *status;
