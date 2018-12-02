@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <signal.h>
 char ** parse_args( char * line , char  separator) {
 
   char **ptr = malloc(256 * sizeof(char *));
@@ -21,6 +22,11 @@ char ** parse_args( char * line , char  separator) {
   while (ptr[ctr++] = strsep(&line, &separator)); //iterate through each split string and add a pointer to it to that index of ptr
 
   return ptr;
+}
+
+static void sighandler(int signo) //sigint no longer ends the program
+{
+  printf("\nType exit if you wish to exit the shell, otherwise, type as usual.\n");
 }
 
 void run (char ** parsed)
@@ -41,13 +47,13 @@ void redirect(char * input)
   ptr = parse_args(parts[0], ' ');
   int backup_stdout = dup(STDOUT_FILENO);
   dup2(fdnew, STDOUT_FILENO);
-  
   run(ptr);
   dup2(backup_stdout, STDOUT_FILENO);
 }
 
 int main(int argc, char* argv[])
 {
+  signal(SIGINT, sighandler);
   char * junk = malloc(sizeof *junk); //holds the newline so fscanf works
   char ** programs = malloc(256 * sizeof *programs); //will hold things separated by semicolons
   char * line = malloc(256 * sizeof *line); //will hold input
@@ -55,7 +61,7 @@ int main(int argc, char* argv[])
   int i; //for the for loop
   while(1) //forever
     {
-      printf("%s>> ", getenv("USER"));//, getcwd(buf, sizeof buf));
+      printf("%s>> ", getenv("USER")); //prints username as prompt
       fscanf(stdin, "%[^\n]s", line); //scans line of user input to newline
       fscanf(stdin, "%c", junk); //holds the newline so input can continue
       //printf("hiya\n");
@@ -72,13 +78,13 @@ int main(int argc, char* argv[])
 	  
 	  else //everything else
 	    {
-	      parsed = parse_args(programs[i], ' '); //separate by spaces to input into execvp
 	      
 	      if (strchr(programs[i], '>'))
 		{
-		  //printf("we got here\n");
+		  //printf("%s", programs[i]);
 		  redirect(programs[i]);
-		  }
+		}
+	      parsed = parse_args(programs[i], ' '); //separate by spaces to input into execvp
 	      run(parsed); //fork and exec
 	    }
 	}
