@@ -4,7 +4,8 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-
+#include <fcntl.h>
+#include <sys/stat.h>
 char ** parse_args( char * line , char  separator) {
 
   char **ptr = malloc(256 * sizeof(char *));
@@ -30,6 +31,19 @@ void run (char ** parsed)
       execvp(parsed[0], parsed);
   else
     waitpid(f, status, 0); //parent will wait ffor child
+}
+
+void redirect(char * input)
+{
+  char ** parts = parse_args(input, '>');
+  int fdnew = open(parts[1], O_CREAT | O_WRONLY, 0664);
+  char ** ptr = malloc(256 * sizeof(*ptr));
+  ptr = parse_args(parts[0], ' ');
+  int backup_stdout = dup(STDOUT_FILENO);
+  dup2(fdnew, STDOUT_FILENO);
+  
+  run(ptr);
+  dup2(backup_stdout, STDOUT_FILENO);
 }
 
 int main(int argc, char* argv[])
@@ -59,6 +73,12 @@ int main(int argc, char* argv[])
 	  else //everything else
 	    {
 	      parsed = parse_args(programs[i], ' '); //separate by spaces to input into execvp
+	      
+	      if (strchr(programs[i], '>'))
+		{
+		  //printf("we got here\n");
+		  redirect(programs[i]);
+		  }
 	      run(parsed); //fork and exec
 	    }
 	}
