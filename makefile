@@ -1,7 +1,7 @@
 all: shell.o
-	gcc shell.o
+	gcc -g shell.o
 shell.o: shell.c
-	gcc -c shell.c
+	gcc -c -g shell.c
 run: a.out
 	./a.out $(args)
 again: shell.c
