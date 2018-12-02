@@ -10,8 +10,12 @@ char ** parse_args( char * line , char  separator) {
   char **ptr = malloc(256 * sizeof(char *));
   //allocating memory for the array of strings
 
-  while(*line == ' ')
+  while(*line == ' ') //removing spaces from beginning
     line++;
+  
+  while(!strncmp(line + strlen(line) - 1, " ", 1)) //removing spaces from end
+    *(line + strlen(line) - 1) = '\0';
+  
   int ctr = 0; //the place in the array of string pointers
   while (ptr[ctr++] = strsep(&line, &separator)); //iterate through each split string and add a pointer to it to that index of ptr
 
@@ -20,46 +24,32 @@ char ** parse_args( char * line , char  separator) {
 
 void run (char ** parsed)
 {
-  int * status;
-  int f = fork();
-  if(!f)
-    {
+  int * status; //to hold status
+  int f = fork(); //returns pid of child to parent, null to child
+  if(!f) //child will become program
       execvp(parsed[0], parsed);
-
-    }
   else
-    waitpid(f, status, 0);
-  //printf("%d", f);
-  
+    waitpid(f, status, 0); //parent will wait ffor child
 }
-/**
- * main (int, char*)
- * Does everything. Except parse_args. But you knew that. ;) jk. will fix.
- */
+
 int main(int argc, char* argv[])
 {
-  int *status;
-  int p = getpid();
-  char * junk = malloc(sizeof *junk);
-  char ** programs = malloc(256 * sizeof *programs);
-  char * line = malloc(256 * sizeof *line);
-  char ** parsed = malloc(256 * sizeof *parsed);
-  //char * sc = ';';
-  //char * buf = malloc(128 * sizeof *buf);
-  while(1)
+  char * junk = malloc(sizeof *junk); //holds the newline so fscanf works
+  char ** programs = malloc(256 * sizeof *programs); //will hold things separated by semicolons
+  char * line = malloc(256 * sizeof *line); //will hold input
+  char ** parsed = malloc(256 * sizeof *parsed); //will be input to execvp
+  int i; //for the for loop
+  while(1) //forever
     {
       printf("%s>> ", getenv("USER"));//, getcwd(buf, sizeof buf));
-      fscanf(stdin, "%[^\n]s", line);
-      fscanf(stdin, "%c", junk);
+      fscanf(stdin, "%[^\n]s", line); //scans line of user input to newline
+      fscanf(stdin, "%c", junk); //holds the newline so input can continue
       //printf("hiya\n");
       //junk = &';'; //weeeewooooweeeeewoooo houston we have a problem!
       //printf("hiya2\n");
-      programs = parse_args(line, ';');
-      int i;
-      
-      for(i = 0; programs[i]; i++)
+      programs = parse_args(line, ';'); //separate each statement by semicolons and parse
+      for(i = 0; programs[i]; i++) //for each semicolon-seaparated command
 	{
-	  
 	  if(!strncmp("cd ", programs[i], 3))//cd
 	    chdir(programs[i] + 3);
 	  
@@ -68,10 +58,8 @@ int main(int argc, char* argv[])
 	  
 	  else //everything else
 	    {
-	      //*junk = ' ';
-	      parsed = parse_args(programs[i], ' ');
-	      run(parsed);
-	      //printf("%s", parsed[0]);
+	      parsed = parse_args(programs[i], ' '); //separate by spaces to input into execvp
+	      run(parsed); //fork and exec
 	    }
 	}
     }
