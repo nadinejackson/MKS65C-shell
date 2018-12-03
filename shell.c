@@ -106,7 +106,7 @@ void redirect(char * input)
     fdnew = open(parts[1], O_CREAT | O_WRONLY, 0664);
     }
   */
-  else if(strchr(input, '<'))
+  if(strchr(input, '<'))
     {
       
       parts = parse_args(input, '<');
