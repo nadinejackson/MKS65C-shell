@@ -39,7 +39,7 @@ void run (char ** parsed)
         waitpid(f, status, 0); //parent will wait ffor child
 }
 
-int myPipe (char * input)
+void myPipe (char * input)
 {
 
     char ** parsed = parse_args(input, '|');
@@ -73,16 +73,11 @@ void redirect(char * input)
 {
     char ** parts = parse_args(input, '>');
     int fdnew = open(parts[1], O_CREAT | O_WRONLY, 0664);
+    char ** ptr = malloc(256 * sizeof(*ptr));
+    ptr = parse_args(parts[0], ' ');
     int backup_stdout = dup(STDOUT_FILENO);
     dup2(fdnew, STDOUT_FILENO);
-	
-    if ( strchr(parts[0], '|') )
-	myPipe(parts[0]);
-    else
-      {	char ** ptr = malloc(256 * sizeof(*ptr));
-	ptr = parse_args(parts[0], ' ');
-	run(ptr);
-      }
+    run(ptr);
     dup2(backup_stdout, STDOUT_FILENO);
 }
 
