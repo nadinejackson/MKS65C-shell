@@ -15,6 +15,7 @@
 ## Bugs
 
 * Potential problem with `exit` producing an infinite print
+* Wrtiting to a file doesn't entirely replace the file's contents
 
 ## Function headers
 
