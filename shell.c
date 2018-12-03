@@ -8,80 +8,120 @@
 #include <sys/stat.h>
 char ** parse_args( char * line , char  separator) {
 
-  char **ptr = malloc(256 * sizeof(char *));
-  //allocating memory for the array of strings
+    char **ptr = malloc(256 * sizeof(char *));
+    //allocating memory for the array of strings
 
-  while(*line == ' ') //removing spaces from beginning
-    line++;
+    while(*line == ' ') //removing spaces from beginning
+        line++;
   
-  while(!strncmp(line + strlen(line) - 1, " ", 1)) //removing spaces from end
-    *(line + strlen(line) - 1) = '\0';
+    while(!strncmp(line + strlen(line) - 1, " ", 1)) //removing spaces from end
+        *(line + strlen(line) - 1) = '\0';
   
-  int ctr = 0; //the place in the array of string pointers
-  while (ptr[ctr++] = strsep(&line, &separator)); //iterate through each split string and add a pointer to it to that index of ptr
+    int ctr = 0; //the place in the array of string pointers
+    while (ptr[ctr++] = strsep(&line, &separator)); //iterate through each split string and add a pointer to it to that index of ptr
 
-  return ptr;
+    return ptr;
 }
 
 void run (char ** parsed)
 {
-  int * status; //to hold status
-  int f = fork(); //returns pid of child to parent, null to child
-  if(!f) //child will become program
-      execvp(parsed[0], parsed);
-  else
-    waitpid(f, status, 0); //parent will wait ffor child
+    int * status; //to hold status
+    int f = fork(); //returns pid of child to parent, null to child
+    if(!f) //child will become program
+        execvp(parsed[0], parsed);
+    else
+        waitpid(f, status, 0); //parent will wait ffor child
+}
+
+int myPipe (char * input)
+{
+
+    char ** parsed = parse_args(input, '|');
+    
+    /* in = popen(parsed[0], "r"); // first argument */
+    /* out = popen(parsed[2], "w"); // second argument */
+
+    char ** left = parse_args(parsed[0], ' ');
+    char ** right = parse_args(parsed[1], ' ');
+    
+
+
+    int fds[2];
+    pipe( fds );
+    char line[100];
+    int f = fork();
+    if (f==0) {
+        close( fds[0] );
+        int backup_stdout = dup(STDOUT_FILENO);
+        dup2(fds[1], STDOUT_FILENO);
+        run(left);
+        dup2(backup_stdout, STDOUT_FILENO);
+    }
+    else {
+        close( fds[1] );
+        int backup_stdin = dup(STDIN_FILENO);
+        dup2(fds[0], STDIN_FILENO);
+        run(right);
+        dup2(backup_stdin, STDIN_FILENO);
+    }
+
+
 }
 
 void redirect(char * input)
 {
-  char ** parts = parse_args(input, '>');
-  int fdnew = open(parts[1], O_CREAT | O_WRONLY, 0664);
-  char ** ptr = malloc(256 * sizeof(*ptr));
-  ptr = parse_args(parts[0], ' ');
-  int backup_stdout = dup(STDOUT_FILENO);
-  dup2(fdnew, STDOUT_FILENO);
+    char ** parts = parse_args(input, '>');
+    int fdnew = open(parts[1], O_CREAT | O_WRONLY, 0664);
+    char ** ptr = malloc(256 * sizeof(*ptr));
+    ptr = parse_args(parts[0], ' ');
+    int backup_stdout = dup(STDOUT_FILENO);
+    dup2(fdnew, STDOUT_FILENO);
   
-  run(ptr);
-  dup2(backup_stdout, STDOUT_FILENO);
+    run(ptr);
+    dup2(backup_stdout, STDOUT_FILENO);
 }
 
 int main(int argc, char* argv[])
 {
-  char * junk = malloc(sizeof *junk); //holds the newline so fscanf works
-  char ** programs = malloc(256 * sizeof *programs); //will hold things separated by semicolons
-  char * line = malloc(256 * sizeof *line); //will hold input
-  char ** parsed = malloc(256 * sizeof *parsed); //will be input to execvp
-  int i; //for the for loop
-  while(1) //forever
+    char * junk = malloc(sizeof *junk); //holds the newline so fscanf works
+    char ** programs = malloc(256 * sizeof *programs); //will hold things separated by semicolons
+    char * line = malloc(256 * sizeof *line); //will hold input
+    char ** parsed = malloc(256 * sizeof *parsed); //will be input to execvp
+    int i; //for the for loop
+
+    while(1) //forever
     {
-      printf("%s>> ", getenv("USER"));//, getcwd(buf, sizeof buf));
-      fscanf(stdin, "%[^\n]s", line); //scans line of user input to newline
-      fscanf(stdin, "%c", junk); //holds the newline so input can continue
-      //printf("hiya\n");
-      //junk = &';'; //weeeewooooweeeeewoooo houston we have a problem!
-      //printf("hiya2\n");
-      programs = parse_args(line, ';'); //separate each statement by semicolons and parse
-      for(i = 0; programs[i]; i++) //for each semicolon-seaparated command
-	{
-	  if(!strncmp("cd ", programs[i], 3))//cd
-	    chdir(programs[i] + 3);
+        printf("%s>> ", getenv("USER"));//, getcwd(buf, sizeof buf));
+        fscanf(stdin, "%[^\n]s", line); //scans line of user input to newline
+        fscanf(stdin, "%c", junk); //holds the newline so input can continue
+
+        programs = parse_args(line, ';'); //separate each statement by semicolons and parse
+        for(i = 0; programs[i]; i++) //for each semicolon-seaparated command
+        {
+            
+            if(!strncmp("cd ", programs[i], 3))//cd
+                chdir(programs[i] + 3);
 	  
-	  else if(!strncmp("exit", programs[i], 4))//exit
-	    return 0;
+            else if(!strncmp("exit", programs[i], 4))//exit
+                return 0;
 	  
-	  else //everything else
-	    {
-	      parsed = parse_args(programs[i], ' '); //separate by spaces to input into execvp
-	      
-	      if (strchr(programs[i], '>'))
-		{
-		  //printf("we got here\n");
-		  redirect(programs[i]);
-		  }
-	      run(parsed); //fork and exec
-	    }
-	}
+            else //everything else
+            {
+                if ( strchr(programs[i], '|') ) {
+                    myPipe(programs[i]);
+                }
+                
+                else if (strchr(programs[i], '>')) {
+                    redirect(programs[i]);
+                }
+
+                else {
+                    parsed = parse_args(programs[i], ' '); //separate by spaces to input into execvp
+                    run(parsed); //fork and exec
+                }
+                line = malloc(256 * sizeof *line);
+            }
+        }
     }
-  return 0;
+    return 0;
 }
