@@ -73,11 +73,16 @@ void redirect(char * input)
 {
     char ** parts = parse_args(input, '>');
     int fdnew = open(parts[1], O_CREAT | O_WRONLY, 0664);
-    char ** ptr = malloc(256 * sizeof(*ptr));
-    ptr = parse_args(parts[0], ' ');
     int backup_stdout = dup(STDOUT_FILENO);
     dup2(fdnew, STDOUT_FILENO);
-    run(ptr);
+	
+    if ( strchr(parts[0], '|') )
+	myPipe(parts[0]);
+    else
+      {	char ** ptr = malloc(256 * sizeof(*ptr));
+	ptr = parse_args(parts[0], ' ');
+	run(ptr);
+      }
     dup2(backup_stdout, STDOUT_FILENO);
 }
 
