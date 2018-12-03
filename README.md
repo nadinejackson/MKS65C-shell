@@ -9,7 +9,8 @@
 
 ## Attempted, but unsuccessful
 
-* Displaying the current working directory besides the prompt
+* Displaying the current working directory beside the prompt
+* More complex redirection using >> and 2>
 
 ## Bugs
 
