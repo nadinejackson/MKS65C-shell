@@ -13,7 +13,7 @@
 
 ## Bugs
 
-* Potential problem with exit producing an infinite print
+* Potential problem with `exit` producing an infinite print
 
 ## Function headers
 
