@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <signal.h>
 char ** parse_args( char * line , char  separator) {
 
     char **ptr = malloc(256 * sizeof(char *));
@@ -23,6 +24,11 @@ char ** parse_args( char * line , char  separator) {
     return ptr;
 }
 
+static void sighandler(int signo) //sigint no longer ends the program
+{
+    printf("\nType exit if you wish to exit the shell, otherwise, type as usual.\n");
+}
+
 void run (char ** parsed)
 {
     int * status; //to hold status
@@ -37,14 +43,10 @@ int myPipe (char * input)
 {
 
     char ** parsed = parse_args(input, '|');
-    
-    /* in = popen(parsed[0], "r"); // first argument */
-    /* out = popen(parsed[2], "w"); // second argument */
 
     char ** left = parse_args(parsed[0], ' ');
     char ** right = parse_args(parsed[1], ' ');
     
-
 
     int fds[2];
     pipe( fds );
@@ -65,7 +67,6 @@ int myPipe (char * input)
         dup2(backup_stdin, STDIN_FILENO);
     }
 
-
 }
 
 void redirect(char * input)
@@ -76,13 +77,13 @@ void redirect(char * input)
     ptr = parse_args(parts[0], ' ');
     int backup_stdout = dup(STDOUT_FILENO);
     dup2(fdnew, STDOUT_FILENO);
-  
     run(ptr);
     dup2(backup_stdout, STDOUT_FILENO);
 }
 
 int main(int argc, char* argv[])
 {
+    signal(SIGINT, sighandler);
     char * junk = malloc(sizeof *junk); //holds the newline so fscanf works
     char ** programs = malloc(256 * sizeof *programs); //will hold things separated by semicolons
     char * line = malloc(256 * sizeof *line); //will hold input
